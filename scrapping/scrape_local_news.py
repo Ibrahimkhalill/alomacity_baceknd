@@ -10,13 +10,14 @@ from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 from asgiref.sync import sync_to_async
 from .models import News  # Update path as needed
-
+from .ai_views import analyze_news_item_sentiment
 BASE_URL = "https://www.ksat.com"
 CATEGORY_NAME = "Local"
 CATEGORY_URL = f"{BASE_URL}/news/local/"
 
 @sync_to_async
-def get_or_create_news(item):
+def get_or_create_news(item, sentiment):
+
     return News.objects.get_or_create(
         title=item['headline'],
         defaults={
@@ -25,6 +26,7 @@ def get_or_create_news(item):
             'published_relative_time': item['published_relative_time'],
             'published_datetime': item['published_datetime'],
             'image': item['image'],
+            'badge_status' : sentiment
         }
     )
 
@@ -172,7 +174,12 @@ async def scrape_and_save_local_news():
             for field in required_fields:
                 if not item.get(field):
                     print(f"⚠️ Missing field '{field}' in item: {item}")
-            news, created = await get_or_create_news(item)
+                
+            sentiment = analyze_news_item_sentiment({
+            "Headline": item["headline"],
+            "Description": item["description"]
+        })
+            news, created = await get_or_create_news(item,sentiment)
             print(f"{'🆕 Created' if created else '🔁 Exists'}: {item['headline']}")
         except Exception:
             print(f"❌ Failed to save: {item.get('headline', '[NO HEADLINE]')}")

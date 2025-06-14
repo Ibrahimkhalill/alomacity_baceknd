@@ -10,10 +10,7 @@ class News(models.Model):
     published_relative_time = models.CharField(max_length=300, null=True)
     published_datetime = models.DateTimeField(blank=True,null=True)
     image = models.CharField(max_length=500)
-    badge_status = models.CharField(max_length=50, blank=True, null=True,  choices=[
-        ('Negative', 'Negative'),
-        ('Positive', 'Positive')
-    ])
+    badge_status = models.CharField(max_length=100, blank=True, null=True)
 
 
     def __str__(self):

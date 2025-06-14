@@ -7,7 +7,7 @@ import traceback
 from datetime import datetime
 import urllib.parse
 from .models import News  # Replace with your actual app name
-
+from .ai_views import analyze_news_item_sentiment
 BASE_URL = "https://www.ksat.com"
 TARGET_CATEGORIES = {"Entertainment", "Sports", "News"}
 
@@ -211,7 +211,7 @@ import traceback
 
 # Wrap the DB call in sync_to_async
 @sync_to_async
-def get_or_create_news(item):
+def get_or_create_news(item, sentiment):
     return News.objects.get_or_create(
         title=item['headline'],
         defaults={
@@ -220,6 +220,7 @@ def get_or_create_news(item):
             'published_relative_time': item['published_relative_time'],
             'published_datetime': item['published_datetime'],
             'image': item['image'],
+            'badge_status' : sentiment
         }
     )
 
@@ -235,9 +236,12 @@ async def scrape_and_save_ksat_news():
             for field in required_fields:
                 if field not in item or not item[field]:
                     print(f"⚠️ Missing or empty field '{field}' in item: {item}")
-            
+            sentiment = analyze_news_item_sentiment({
+            "Headline": item["headline"],
+            "Description": item["description"]
+        })
             # Attempt to save
-            news, created = await get_or_create_news(item)
+            news, created = await get_or_create_news(item,sentiment)
             print(f"{'🆕 Created' if created else '🔁 Skipped'}: {item['headline']}")
         
         except Exception as e:
