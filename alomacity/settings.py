@@ -43,10 +43,22 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'authentications',
     'payment',
-    'apscheduler'
+    'apscheduler',
+    'corsheaders',
+    'advertisement'
 ]
 
+# CORS_ALLOWED_ORIGINS = [
+#     "http://192.168.10.12:5173",  # Frontend IP
+# ]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

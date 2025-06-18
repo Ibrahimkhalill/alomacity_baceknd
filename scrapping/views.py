@@ -24,6 +24,9 @@ def list_news(request):
     serializer = NewsSerializer(news, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+
+
 @api_view(['GET'])
 def get_news_detail(request, news_id):
     news = get_object_or_404(News, id=news_id)
