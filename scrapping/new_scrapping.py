@@ -116,6 +116,8 @@ async def scrape_article(page, url, category, relative_time="N/A"):
 
         if image_url == "N/A":
             return None
+        author = soup.find('p', class_="dist__Box-sc-1fnzlkn-0 dist__TextBase-sc-1fnzlkn-3 iPqljA author")
+        author_text = author.get_text(strip=True) if author else "N/A"
 
         paragraphs = soup.find_all("p", class_="article-text")
         description = " ".join(
@@ -146,7 +148,8 @@ async def scrape_article(page, url, category, relative_time="N/A"):
             "published_datetime": published_datetime,
             "published_text": published_text,
             "post_date": post_date,
-            "published_relative_time": relative_time
+            "published_relative_time": relative_time,
+            "author" : author_text
         }
 
     except Exception as e:
@@ -220,7 +223,8 @@ def get_or_create_news(item, sentiment):
             'published_relative_time': item['published_relative_time'],
             'published_datetime': item['published_datetime'],
             'image': item['image'],
-            'badge_status' : sentiment
+            'badge_status' : sentiment,
+            'author' : item['author']
         }
     )
 

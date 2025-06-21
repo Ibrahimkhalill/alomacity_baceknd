@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db.models import Q
 
 # Create your views here.
 from rest_framework.decorators import api_view, permission_classes
@@ -50,7 +51,7 @@ def delete_news(request, news_id):
     news.delete()
     return Response({"message": "News deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
-@api_view(['POST','PUT'])
+@api_view(['POST', 'PUT'])
 @permission_classes([IsAuthenticated])
 def create_or_update_reaction(request, news_id):
     user = request.user
@@ -60,12 +61,14 @@ def create_or_update_reaction(request, news_id):
     reaction, created = Reaction.objects.get_or_create(user=user, news=news)
     
     # Update reaction
-    love = request.data.get('love', False)
-    comment = request.data.get('comment', None)
+    # Only update love if it's explicitly provided in the request
+    if 'love' in request.data:
+        reaction.love = request.data.get('love', False)
     
-    reaction.love = love
-    if comment is not None:
-        reaction.comment = comment
+    # Update comment if provided
+    if 'comment' in request.data:
+        reaction.comment = request.data.get('comment', None)
+    
     reaction.save()
     
     serializer = ReactionSerializer(reaction)
@@ -78,3 +81,19 @@ def get_reactions_for_news(request, news_id):
     reactions = Reaction.objects.filter(news=news)
     serializer = ReactionSerializer(reactions, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def news_search(request):
+    search_query = request.query_params.get('q', None)
+    queryset = News.objects.all()
+    
+    if search_query:
+        queryset = queryset.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(category__icontains=search_query)
+        )
+    
+    serializer = NewsSerializer(queryset, many=True)
+    return Response(serializer.data)
