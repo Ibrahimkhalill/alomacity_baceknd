@@ -55,8 +55,8 @@ def create_checkout_session(request):
                 }
             ],
             mode="subscription",
-            success_url=f"https://lamprey-included-lion.ngrok-free.app/api/payment/payment_success/",
-            cancel_url=f"https://lamprey-included-lion.ngrok-free.app/api/payment/payment_cancel",
+            success_url=f"http://localhost:5173/payment/success",
+            cancel_url=f"http://localhost:5173/payment/cancel",
             metadata={  # Attach metadata to the session
                 "user_id": str(user.id),  # Include the user ID for tracking
                 "plan_name": plan_name,  # Include the plan name

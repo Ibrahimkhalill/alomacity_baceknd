@@ -11,7 +11,7 @@ class News(models.Model):
     published_datetime = models.DateTimeField(blank=True,null=True)
     image = models.CharField(max_length=500)
     badge_status = models.CharField(max_length=100, blank=True, null=True)
-
+    author = models.CharField(max_length=300, blank=True, null=True)
 
     def __str__(self):
         return self.title
