@@ -75,3 +75,14 @@ def advertisement_approve(request, pk):
         advertisement.save()
         serializer = AdvertisementSerializer(advertisement)
         return Response(serializer.data)
+    
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def advertisement_rejected(request, pk):
+    if request.method == 'POST':
+        advertisement = get_object_or_404(Advertisement, pk=pk)
+        advertisement.status = 'rejected'
+        advertisement.save()
+        serializer = AdvertisementSerializer(advertisement)
+        return Response(serializer.data)

@@ -9,6 +9,8 @@ from rest_framework import status
 from .models import News, Reaction
 from .serializers import NewsSerializer, ReactionSerializer
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from datetime import timedelta
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -21,7 +23,8 @@ def create_news(request):
 
 @api_view(['GET'])
 def list_news(request):
-    news = News.objects.all().order_by('-published_datetime')  # sort by most recent
+    two_days_ago = timezone.now() - timedelta(days=2)
+    news = News.objects.filter(published_datetime__gte=two_days_ago).order_by('-published_datetime')
     serializer = NewsSerializer(news, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -75,7 +78,6 @@ def create_or_update_reaction(request, news_id):
     return Response(serializer.data, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_reactions_for_news(request, news_id):
     news = get_object_or_404(News, id=news_id)
     reactions = Reaction.objects.filter(news=news)

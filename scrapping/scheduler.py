@@ -25,8 +25,8 @@ def start():
 
 def run_ksat_scraper_task():
     print("🔁 Running KSAT general news scraper...")
-    # asyncio.run(scrape_and_save_ksat_news())
+    asyncio.run(scrape_and_save_ksat_news())
 
 def run_local_scraper_task():
     print("🔁 Running KSAT local news scraper...")
-    # asyncio.run(scrape_and_save_local_news())
+    asyncio.run(scrape_and_save_local_news())
