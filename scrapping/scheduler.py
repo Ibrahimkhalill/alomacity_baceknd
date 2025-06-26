@@ -15,10 +15,10 @@ def start():
         scheduler = BackgroundScheduler()
 
         # 📰 Job 1: General KSAT news
-        scheduler.add_job(run_ksat_scraper_task, 'interval', minutes=10)
+        scheduler.add_job(run_ksat_scraper_task, 'interval', minutes=60)
 
         # 🏙️ Job 2: Local news only
-        scheduler.add_job(run_local_scraper_task, 'interval', minutes=5)
+        scheduler.add_job(run_local_scraper_task, 'interval', minutes=60)
 
         scheduler.start()
         print("✅ APScheduler started with 2 scraping jobs...")
