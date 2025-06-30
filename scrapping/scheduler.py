@@ -30,3 +30,6 @@ def run_ksat_scraper_task():
 def run_local_scraper_task():
     print("🔁 Running KSAT local news scraper...")
     asyncio.run(scrape_and_save_local_news())
+
+
+# scheduler.py (অথবা যেকোনো নামের মডিউল)
