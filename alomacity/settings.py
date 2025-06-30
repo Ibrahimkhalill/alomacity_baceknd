@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'payment',
     'apscheduler',
     'corsheaders',
-    'advertisement'
+    'advertisement',
+    'django_apscheduler'
 ]
 
 # CORS_ALLOWED_ORIGINS = [
