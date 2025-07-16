@@ -23,7 +23,7 @@ def create_news(request):
 
 @api_view(['GET'])
 def list_news(request):
-    two_days_ago = timezone.now() - timedelta(days=2)
+    two_days_ago = timezone.now() - timedelta(days=30)
     news = News.objects.filter(published_datetime__gte=two_days_ago).order_by('-published_datetime')
     serializer = NewsSerializer(news, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

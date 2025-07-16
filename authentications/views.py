@@ -35,7 +35,7 @@ def send_otp_email(email, otp):
     msg = EmailMultiAlternatives(
         subject='Your OTP Code',
         body=f'Your OTP is {otp}',
-        from_email='hijabpoint374@gmail.com',
+        from_email='Alamocitypulse@alamocitypulse.com',
         to=[email]
     )
     msg.attach_alternative(html_content, "text/html")

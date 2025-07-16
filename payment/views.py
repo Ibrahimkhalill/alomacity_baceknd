@@ -27,6 +27,7 @@ stripe.api_key = os.getenv("API_KEY")
 # Webhook secret (get this from your Stripe Dashboard)
 endpoint_secret ="whsec_vgsQoSiGUL0Gv0s2JqECH4OSECIXO3ng"
 
+print("d",os.getenv("API_KEY"))
 
 
 @api_view(["POST"])
