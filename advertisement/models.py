@@ -9,14 +9,14 @@ User = get_user_model()
 
 class Advertisement(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='advertisements')
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    category = models.CharField(max_length=100)
+    title = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    category = models.TextField(blank=True, null=True)
     views = models.PositiveIntegerField(default=0)
     url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
-        max_length=20,
+        max_length=500,
         choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')],
         default='pending'
     )
@@ -40,7 +40,7 @@ class AdvertisementImage(models.Model):
 def generate_serial_number(sender, instance, **kwargs):
     if not instance.serial_number:
         while True:
-            serial = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            serial = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
             if not Advertisement.objects.filter(serial_number=serial).exists():
                 instance.serial_number = serial
                 break

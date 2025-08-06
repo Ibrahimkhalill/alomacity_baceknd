@@ -24,7 +24,7 @@ from django.contrib.auth.hashers import check_password
 import random
 
 def generate_otp():
-    return str(random.randint(100000, 999999))  # Generates a 6-digit OTP
+    return str(random.randint(100000, 999999))  
 
 
 User = get_user_model()
@@ -35,7 +35,7 @@ def send_otp_email(email, otp):
     msg = EmailMultiAlternatives(
         subject='Your OTP Code',
         body=f'Your OTP is {otp}',
-        from_email='Alamocitypulse@alamocitypulse.com',
+        from_email='Alomacitypulse <alamocitypulse@alamocitypulse.com>',
         to=[email]
     )
     msg.attach_alternative(html_content, "text/html")
@@ -66,14 +66,20 @@ def login(request):
         # Choose profile based on role
         if user.role in ['user', 'admin']:
             try:
+               
                 profile = user.user_profile
+                print("Profile found:", profile)
             except UserProfile.DoesNotExist:
                 profile = UserProfile.objects.create(user=user, name=user.email.split('@')[0])
             profile_serializer = UserProfileSerializer(profile)
+            print("Profile serializer data:", profile_serializer.data)
+        else:
+            return Response({"error": "Invalid user role"}, status=status.HTTP_400_BAD_REQUEST)
        
         return Response({
             "access_token": str(refresh.access_token),
             "refresh_token": str(refresh),
+            "role": user.role,
             "profile": profile_serializer.data
         }, status=status.HTTP_200_OK)
     print("serializer.errors",serializer.errors)
@@ -96,12 +102,15 @@ def list_users(request):
 def user_profile(request):
     try:
         profile = request.user.user_profile
+        print("Profile found for user:", request.user.email)
     except UserProfile.DoesNotExist:
         profile = UserProfile.objects.create(user=request.user)
+        print("Profile created for user:", request.user.email)
 
     if request.method == 'GET':
         subscription = Subscription.objects.get(user=request.user)
         serializer = SubscriptionSerializer(subscription)
+        print("Subscription serializer data:", serializer.data)
         # serializer = UserProfileSerializer(profile)
         return Response(serializer.data)
 
@@ -111,6 +120,8 @@ def user_profile(request):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
 
 # ✅ Create OTP
 @api_view(['POST'])

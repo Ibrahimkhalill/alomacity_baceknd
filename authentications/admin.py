@@ -6,22 +6,22 @@ from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, UserProfile, OTP
 
 
-class CustomUserAdmin(UserAdmin):
-    list_display = ('email', 'role', 'is_staff', 'is_active')  # Added 'role'
-    list_filter = ('role', 'is_staff', 'is_active', 'is_superuser')  # Added 'role' to filters
-    fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'role')}),  # Added 'role'
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-    )
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'role', 'is_staff', 'is_active', 'is_superuser')}),
-    )
-    search_fields = ('email',)
-    ordering = ('email',)
-    filter_horizontal = ('groups', 'user_permissions',)
+# class CustomUserAdmin(UserAdmin):
+#     list_display = ('email', 'role', 'is_staff', 'is_active')  # Added 'role'
+#     list_filter = ('role', 'is_staff', 'is_active', 'is_superuser')  # Added 'role' to filters
+#     fieldsets = (
+#         (None, {'fields': ('email', 'password')}),
+#         ('Personal Info', {'fields': ('first_name', 'last_name', 'role')}),  # Added 'role'
+#         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+#     )
+#     add_fieldsets = (
+#         (None, {
+#             'classes': ('wide',),
+#             'fields': ('email', 'password1', 'password2', 'role', 'is_staff', 'is_active', 'is_superuser')}),
+#     )
+#     search_fields = ('email',)
+#     ordering = ('email',)
+#     filter_horizontal = ('groups', 'user_permissions',)
 
 # Inline for managing languages in GuideProfile
 
@@ -29,7 +29,7 @@ class CustomUserAdmin(UserAdmin):
 # Customize GuideProfile admin
 
 # Register CustomUser
-admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(CustomUser)
 
 # Register other models
 @admin.register(UserProfile)

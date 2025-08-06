@@ -9,7 +9,7 @@ class AdvertisementImageSerializer(serializers.ModelSerializer):
 class AdvertisementSerializer(serializers.ModelSerializer):
     images = AdvertisementImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
-        child=serializers.ImageField(max_length=1000000, allow_empty_file=False),
+        child=serializers.ImageField(max_length=100000000, allow_empty_file=False),
         write_only=True
     )
     user = serializers.ReadOnlyField(source='user.email')  # Read-only user field
@@ -19,14 +19,31 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'serial_number', 'title', 'description', 'category', 'views', 'url', 'images', 'uploaded_images', 'status', 'created_at']
 
     def create(self, validated_data):
-        uploaded_images = validated_data.pop('uploaded_images')
-        # Ensure user is available from context
+        print("Inside create() method")  # Debugging
+        uploaded_images = validated_data.pop('uploaded_images', [])
+        print(f"Uploaded images count: {len(uploaded_images)}")
+        
         user = self.context['request'].user
+        print(f"Creating ad for user: {user}")
+
         if not user.is_authenticated:
             raise serializers.ValidationError("Authentication required to create an advertisement.")
-        advertisement = Advertisement.objects.create(user=user, **validated_data)
+
+        try:
+            advertisement = Advertisement.objects.create(user=user, **validated_data)
+            print("Advertisement object created")
+        except Exception as e:
+            print("Error creating Advertisement:", e)
+            raise
+
         for image in uploaded_images:
-            AdvertisementImage.objects.create(advertisement=advertisement, image=image)
+            try:
+                AdvertisementImage.objects.create(advertisement=advertisement, image=image)
+                print("Image uploaded successfully")
+            except Exception as e:
+                print("Error uploading image:", e)
+                raise
+
         return advertisement
 
     def update(self, instance, validated_data):

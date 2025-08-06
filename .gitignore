@@ -1,1 +1,23 @@
 .env
+myenv/
+venv/
+node_modules/
+dist/
+.DS_Store
+*.log
+*.tmp
+*.bak
+*.swp
+*.cache
+*.pid
+coverage/
+*.tgz
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.exe
+*.dll
+*.so
+_ pycache__/
+*.pyc

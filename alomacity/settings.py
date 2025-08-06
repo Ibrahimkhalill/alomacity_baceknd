@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-4tlcs4%j!v@6471!sy5r=8&t#i0#g!m39#j!1mtp%gp&l+sdtt'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -107,13 +107,23 @@ WSGI_APPLICATION = 'alomacity.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'alomacity',
+        'USER': 'alomacity',
+        'PASSWORD': 'alomacity1234',  # 🔐 Replace with the actual password you set
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -174,6 +184,6 @@ EMAIL_HOST = 'smtp.hostinger.com'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True  # SSL instead of TLS on port 465
 EMAIL_USE_TLS = False  # Disable TLS since you're using SSL
-EMAIL_HOST_USER = 'Alamocitypulse@alamocitypulse.com'  # Your Hostinger email address
-EMAIL_HOST_PASSWORD = 'W2r=@*dh'  # The email password set in Hostinger
+EMAIL_HOST_USER = 'alamocitypulse@alamocitypulse.com'  # Your Hostinger email address
+EMAIL_HOST_PASSWORD = 'alomacity124@A'  # The email password set in Hostinger
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

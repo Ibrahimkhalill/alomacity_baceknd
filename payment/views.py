@@ -25,7 +25,7 @@ load_dotenv()
 stripe.api_key = os.getenv("API_KEY")
 
 # Webhook secret (get this from your Stripe Dashboard)
-endpoint_secret ="whsec_vgsQoSiGUL0Gv0s2JqECH4OSECIXO3ng"
+endpoint_secret ="whsec_B2AEVJUulhSoJEKNaOZnVgQHSSEWl4IT"
 
 print("d",os.getenv("API_KEY"))
 
@@ -56,8 +56,8 @@ def create_checkout_session(request):
                 }
             ],
             mode="subscription",
-            success_url=f"http://localhost:5173/payment/success",
-            cancel_url=f"http://localhost:5173/payment/cancel",
+            success_url=f"https://alamocitypulse.com/payment/success",
+            cancel_url=f"https://alamocitypulse.com/payment/cancel",
             metadata={  # Attach metadata to the session
                 "user_id": str(user.id),  # Include the user ID for tracking
                 "plan_name": plan_name,  # Include the plan name

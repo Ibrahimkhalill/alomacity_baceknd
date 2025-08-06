@@ -9,12 +9,18 @@ from django.shortcuts import get_object_or_404
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def advertisement_create(request):
-    if request.method == 'POST':
-        serializer = AdvertisementSerializer(data=request.data, context={'request': request})  # Pass request context
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    print("Request user:", request.user)
+    print("Request data:", request.data)
+    
+    serializer = AdvertisementSerializer(data=request.data, context={'request': request})
+    
+    if serializer.is_valid():
+        print("Serializer validated successfully.")
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    print("Serializer errors:", serializer.errors)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
