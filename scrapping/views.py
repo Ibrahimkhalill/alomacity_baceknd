@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.db.models import Q
+from django.core.cache import cache
 
 # Create your views here.
 from rest_framework.decorators import api_view, permission_classes
@@ -11,6 +12,7 @@ from .serializers import NewsSerializer, ReactionSerializer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
+from rest_framework.pagination import PageNumberPagination
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -20,13 +22,31 @@ def create_news(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+CACHE_TIMEOUT = 60 * 60  # 10 minutes
 
 @api_view(['GET'])
 def list_news(request):
-    two_days_ago = timezone.now() - timedelta(days=30)
-    news = News.objects.filter(published_datetime__gte=two_days_ago).order_by('-published_datetime')
-    serializer = NewsSerializer(news, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    cache_key = "last_4_days_news"
+
+    # Check cache first
+    news_data = cache.get(cache_key)
+    if not news_data:
+        news_queryset = News.objects.all().order_by('-published_datetime')
+        serializer = NewsSerializer(news_queryset, many=True)
+        news_data = serializer.data
+
+        # Store in cache
+        cache.set(cache_key, news_data, timeout=CACHE_TIMEOUT)
+        print("Cache populated")
+    else:
+        print("Cache hit")
+
+    # Pagination on cached data
+    paginator = PageNumberPagination()
+    paginator.page_size = 50
+    result_page = paginator.paginate_queryset(news_data, request)
+
+    return paginator.get_paginated_response(result_page)
 
 
 

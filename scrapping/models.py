@@ -8,7 +8,7 @@ class News(models.Model):
     description = models.TextField(blank=True, null=True)
     category = models.CharField(max_length=100, blank=True, null=True)
     published_relative_time = models.CharField(max_length=300, null=True)
-    published_datetime = models.DateTimeField(blank=True,null=True)
+    published_datetime = models.DateTimeField(blank=True, null=True, db_index=True)
     image = models.CharField(max_length=500)
     badge_status = models.CharField(max_length=100, blank=True, null=True)
     author = models.CharField(max_length=300, blank=True, null=True)

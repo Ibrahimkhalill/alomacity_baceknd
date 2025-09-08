@@ -66,7 +66,7 @@ def get_openai_sentiment(text_content: str, model: str = "gpt-4o-mini", temperat
  
     except Exception as e:
         logging.error(f"Error calling OpenAI API for sentiment: {e}")
-        return "error" # Indicates an API call or processing error
+        return None # Indicates an API call or processing error
  
 # --- Main Sentiment Analysis Function ---
 def analyze_news_item_sentiment(news_data: dict) -> str:
@@ -90,7 +90,7 @@ def analyze_news_item_sentiment(news_data: dict) -> str:
     """
     if not isinstance(news_data, dict):
         logging.error("Invalid input: news_data must be a dictionary.")
-        return "error"
+        return None
  
     headline = news_data.get("Headline", "")
     description = news_data.get("Description", "")
@@ -116,6 +116,7 @@ def analyze_news_item_sentiment(news_data: dict) -> str:
  
     logging.info(f"Analyzing sentiment for URL: {news_data.get('URL', 'N/A')}")
     sentiment = get_openai_sentiment(combined_text)
+    print("Predicted sentiment", sentiment)
     logging.info(f"Predicted sentiment: {sentiment} for URL: {news_data.get('URL', 'N/A')}")
  
     return sentiment

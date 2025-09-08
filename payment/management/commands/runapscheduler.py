@@ -8,6 +8,8 @@ from datetime import timedelta
 from payment.models import Subscription
 from django_apscheduler.models import DjangoJobExecution
 
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django_apscheduler import util
 
 
@@ -19,17 +21,24 @@ def delete_old_job_executions(max_age=604_800):  # 7 দিন = 604,800 সে�
 def check_expired_subscriptions():
     now = timezone.now()
 
-    expired = Subscription.objects.filter(is_active=True, end_date__lt=now)
+    # Exclude subscriptions that belong to admin users
+    expired = Subscription.objects.filter(
+        is_active=True,
+        end_date__lt=now
+    ).exclude(user__role='admin')  # 👈 this line prevents admin expiry
+
     for subscription in expired:
         subscription.status = 'expired'
         subscription.is_active = False
         subscription.save()
 
+    # Also disable free trial subscriptions older than 7 days, excluding admin
     free_expired = Subscription.objects.filter(
         is_active=True,
         status='free',
         start_date__lt=now - timedelta(days=7)
-    )
+    ).exclude(user__role='admin')
+
     free_expired.update(is_active=False)
 
     print(f"[Scheduler] Expired: {expired.count()}, Free expired: {free_expired.count()}")

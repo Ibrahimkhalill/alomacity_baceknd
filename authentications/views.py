@@ -49,9 +49,37 @@ def send_otp_email(email, otp):
 def register_user(request):
     serializer = CustomUserCreateSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        user = serializer.save()
+
+        # Generate tokens (same as login)
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+
+        # Choose profile based on role
+        if user.role in ['user', 'admin']:
+            try:
+                profile = user.user_profile
+            except UserProfile.DoesNotExist:
+                profile = UserProfile.objects.create(
+                    user=user,
+                    name=user.email.split('@')[0]
+                )
+            profile_serializer = UserProfileSerializer(profile)
+        else:
+            return Response(
+                {"error": "Invalid user role"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return Response({
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+            "role": user.role,
+            "profile": profile_serializer.data
+        }, status=status.HTTP_201_CREATED)
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

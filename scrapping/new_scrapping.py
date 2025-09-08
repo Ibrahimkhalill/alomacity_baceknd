@@ -235,21 +235,31 @@ async def scrape_and_save_ksat_news():
 
     for item in scraped:
         try:
-            # Optional: Validate required fields before DB call
             required_fields = ['headline', 'description', 'category', 'published_relative_time', 'published_datetime', 'image']
             for field in required_fields:
                 if field not in item or not item[field]:
                     print(f"⚠️ Missing or empty field '{field}' in item: {item}")
-            sentiment = analyze_news_item_sentiment({
-            "Headline": item["headline"],
-            "Description": item["description"]
-        })
-            # Attempt to save
-            news, created = await get_or_create_news(item,sentiment)
-            print(f"{'🆕 Created' if created else '🔁 Skipped'}: {item['headline']}")
-        
+
+            news, created = await get_or_create_news(item, sentiment=None)
+
+            if created:
+                try:
+                    sentiment = analyze_news_item_sentiment({
+                        "Headline": item["headline"],
+                        "Description": item["description"]
+                    })
+                except Exception as e:
+                    print(f"⚠️ Sentiment analysis failed for '{item['headline']}': {e}")
+                    sentiment = None  # or "Unknown"
+
+                if sentiment:
+                    news.badge_status = sentiment
+                    await sync_to_async(news.save)()
+                print(f"🆕 Created: {item['headline']} (sentiment {'analyzed' if sentiment else 'skipped'})")
+            else:
+                print(f"🔁 Skipped (already exists): {item['headline']} (sentiment analysis skipped)")
+
         except Exception as e:
             print(f"❌ Failed to save: {item.get('headline', '[NO HEADLINE]')}")
             print("🔎 Raw item data:", item)
             traceback.print_exc()
-

@@ -177,13 +177,23 @@ async def scrape_and_save_local_news():
             for field in required_fields:
                 if not item.get(field):
                     print(f"⚠️ Missing field '{field}' in item: {item}")
+
+            news, created = await get_or_create_news(item, sentiment=None)  # Pass None initially
+
+            if created:
+                try:
+                    sentiment = analyze_news_item_sentiment({
+                        "Headline": item["headline"],
+                        "Description": item["description"]
+                    })
+                except Exception as e:
+                    print(f"⚠️ Sentiment analysis failed for '{item['headline']}': {e}")
+                    sentiment = None  # or "Unknown"
+
+                news.badge_status = sentiment
+                await sync_to_async(news.save)()
+                print(f"🆕 Created: {item['headline']} (sentiment {'analyzed' if sentiment else 'skipped'})")
                 
-            sentiment = analyze_news_item_sentiment({
-            "Headline": item["headline"],
-            "Description": item["description"]
-        })
-            news, created = await get_or_create_news(item,sentiment)
-            print(f"{'🆕 Created' if created else '🔁 Exists'}: {item['headline']}")
         except Exception:
             print(f"❌ Failed to save: {item.get('headline', '[NO HEADLINE]')}")
             traceback.print_exc()
