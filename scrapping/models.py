@@ -4,9 +4,9 @@ from django.conf import settings
 User = get_user_model()
 
 class News(models.Model):
-    title = models.TextField(blank=True, null=True)
+    title = models.TextField(blank=True, null=True, db_index=True)
     description = models.TextField(blank=True, null=True)
-    category = models.CharField(max_length=100, blank=True, null=True)
+    category = models.CharField(max_length=100, blank=True, null=True, db_index=True)
     published_relative_time = models.CharField(max_length=300, null=True)
     published_datetime = models.DateTimeField(blank=True, null=True, db_index=True)
     image = models.CharField(max_length=500)

@@ -25,9 +25,9 @@ load_dotenv()
 stripe.api_key = os.getenv("API_KEY")
 
 # Webhook secret (get this from your Stripe Dashboard)
-endpoint_secret ="whsec_B2AEVJUulhSoJEKNaOZnVgQHSSEWl4IT"
+endpoint_secret = os.getenv("ENPOINT_SECRET")
 
-print("d",os.getenv("API_KEY"))
+print("d",os.getenv("API_KEY"),os.getenv("PRICE_ID"), endpoint_secret)
 
 
 @api_view(["POST"])
@@ -36,7 +36,7 @@ def create_checkout_session(request):
     # DOMAIN = "https://lamprey-included-lion.ngrok-free.app/api/payment"  # Replace with your actual domain
 
     # Get the data from the frontend
-    price_id = request.data.get("price_id")  # Stripe price ID
+    price_id = os.getenv("PRICE_ID")  # Stripe price ID
     plan_name = request.data.get("plan_name")  # Name of the subscription plan
     duration_type = request.data.get("duration_type")  # Type of the plan (monthly/yearly)
 
@@ -140,6 +140,36 @@ def stripe_webhook(request):
         except Exception as e:
             print(f"Error processing subscription for user {user_id}: {str(e)}")
             return Response({"error": "Error processing subscription"}, status=400)
+        
+    elif event["type"] in ["invoice.payment_succeeded", "customer.subscription.updated"]:
+        subscription_data = event["data"]["object"]
+        stripe_subscription_id = subscription_data.get("subscription") or subscription_data.get("id")
+
+        try:
+            stripe_subscription = stripe.Subscription.retrieve(stripe_subscription_id)
+            user_id = stripe_subscription["metadata"].get("user_id")
+
+            if not user_id:
+                print(f"Missing user_id in metadata for renewal: {stripe_subscription_id}")
+                return Response({"error": "Missing user_id"}, status=400)
+
+            user = get_object_or_404(CustomUser, id=user_id)
+            subscription_item = stripe_subscription["items"]["data"][0]
+            current_period_start = datetime.fromtimestamp(subscription_item["current_period_start"])
+            current_period_end = datetime.fromtimestamp(subscription_item["current_period_end"])
+
+            # Update local subscription
+            subscription = Subscription.objects.get(user=user)
+            subscription.start_date = current_period_start
+            subscription.end_date = current_period_end
+            subscription.is_active = True
+            subscription.save()
+
+            print(f"✅ Subscription renewed for user {user_id} till {current_period_end}")
+
+        except Exception as e:
+            print(f"⚠️ Error updating renewed subscription: {str(e)}")
+            return Response({"error": "Error updating renewal"}, status=400)
 
     elif event["type"] == "invoice.payment_failed" or event["type"] == "customer.subscription.deleted":
         session = event["data"]["object"]
@@ -156,12 +186,49 @@ def stripe_webhook(request):
                 pass
 
     return Response({"status": "success"}, status=200)
+
+
 def checkout_success(request):
     return HttpResponse("Your checkout was successful!", status=200)
 
 
 def checkout_cencel(request):
     return HttpResponse("Your checkout was successful!", status=200)
+
+
+
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def cancel_subscription(request):
+    try:
+        # Step 1: Get the user
+        user = request.user
+
+        # Step 2: Get user’s active subscription
+        subscription = get_object_or_404(Subscription, user=user, is_active=True)
+        stripe_subscription_id = subscription.stripe_subscription_id
+
+        if not stripe_subscription_id:
+            return Response({"error": "No active Stripe subscription found."}, status=400)
+
+        canceled = stripe.Subscription.delete(stripe_subscription_id)
+
+        subscription.is_active = False
+        subscription.status = "canceled"
+        subscription.end_date = datetime.fromtimestamp(canceled["current_period_end"])
+        subscription.save()
+
+        return Response({
+            "message": "Subscription canceled successfully.",
+            "cancel_at_period_end": canceled.get("cancel_at_period_end", False),
+            "current_period_end": subscription.end_date
+        }, status=200)
+
+    except Exception as e:
+        print(f"Error canceling subscription: {str(e)}")
+        return Response({"error": str(e)}, status=400)
 
 
 

@@ -33,6 +33,7 @@ class Subscription(models.Model):
     STATUS_CHOICES = [
         ('free', 'Free'),
         ('premium', 'Premium'),
+        ('canceled', 'Canceled'),
     ]
     
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscriptions')

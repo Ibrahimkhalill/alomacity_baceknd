@@ -105,17 +105,26 @@ def get_reactions_for_news(request, news_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+from django.core.cache import cache
+
 @api_view(['GET'])
 def news_search(request):
     search_query = request.query_params.get('q', None)
+    cache_key = f"search:{search_query}"
+
+    result = cache.get(cache_key)
+    if result:
+        print("Cache hit")
+        return Response(result)
+
     queryset = News.objects.all()
-    
     if search_query:
         queryset = queryset.filter(
             Q(title__icontains=search_query) |
             Q(description__icontains=search_query) |
             Q(category__icontains=search_query)
         )
-    
+
     serializer = NewsSerializer(queryset, many=True)
+    cache.set(cache_key, serializer.data, timeout=300)  # 5 min
     return Response(serializer.data)
